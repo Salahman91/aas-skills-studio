@@ -79,7 +79,7 @@ browse, search in plain Arabic/English, download, and install into your AI tool.
 المتطلبات: Windows + Python 3.14 مع tkinter (مضمّن في مثبّت Python الرسمي).
 
 ```bash
-git clone https://github.com/<your-user>/aas-skills-studio.git
+git clone https://github.com/<account>/aas-skills-studio.git  # or your fork URL
 cd aas-skills-studio
 py -3.14 app.py
 ```
@@ -264,7 +264,7 @@ page when available.
 Requirements: Windows + Python 3.14 with tkinter (bundled in the official installer).
 
 ```bash
-git clone https://github.com/<your-user>/aas-skills-studio.git
+git clone https://github.com/<account>/aas-skills-studio.git  # or your fork URL
 cd aas-skills-studio
 py -3.14 app.py
 ```
