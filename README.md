@@ -8,6 +8,8 @@
 browse, search in plain Arabic/English, download, and install into your AI tool.**
 
 <p>
+  <a href="https://github.com/Salahman91/aas-skills-studio/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/Salahman91/aas-skills-studio?style=flat-square&color=5eead4"></a>
+  <img alt="build" src="https://github.com/Salahman91/aas-skills-studio/actions/workflows/build.yml/badge.svg">
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows-0b0d12?style=flat-square">
   <img alt="python" src="https://img.shields.io/badge/python-3.14-0b0d12?style=flat-square&logo=python">
   <img alt="skills" src="https://img.shields.io/badge/skills-2750-5eead4?style=flat-square">

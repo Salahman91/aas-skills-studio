@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a defect in AAS Skills Studio / الإبلاغ عن خلل
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكراً لإبلاغك. املأ الحقول التالية قدر الإمكان.
+        Thanks for the report — please fill in as much as you can.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? / ماذا حدث؟
+      placeholder: وصف واضح للمشكلة، وما توقعته بدلاً منها.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / خطوات التكرار
+      placeholder: |
+        1. افتح التطبيق
+        2. اختر ...
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version / إصدار التطبيق
+      placeholder: "2.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version / إصدار ويندوز
+      placeholder: "Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area / المجال
+      options:
+        - Search / البحث
+        - Download / التنزيل
+        - Install target / الإضافة إلى برنامج
+        - UI / الواجهة
+        - Gemini
+        - Other / أخرى
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots / سجلات أو صور
+      description: يمكنك لصق محتوى `aas-download-log.txt` أو إرفاق صورة.
+    validations:
+      required: false

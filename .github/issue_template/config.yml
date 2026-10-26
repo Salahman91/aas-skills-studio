@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report / إبلاغ أمني
+    url: https://github.com/Salahman91/aas-skills-studio/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately — لا تنشرها كقضية عامة.
+  - name: Upstream skills library
+    url: https://github.com/sickn33/agentic-awesome-skills
+    about: Issues about the skills themselves belong to the upstream repository.

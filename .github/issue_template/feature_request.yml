@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an idea / اقترح ميزة
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        صف الفكرة والسبب وراءها.
+        Describe the idea and why it matters.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / المشكلة
+      placeholder: ما الذي يصعب عليك الآن؟
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution / الحل المقترح
+      placeholder: كيف تتخيل الميزة؟
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / بدائل
+    validations:
+      required: false
