@@ -72,9 +72,10 @@ browse, search in plain Arabic/English, download, and install into your AI tool.
 
 ### 1) الملف التنفيذي (الطريقة الأسهل)
 
-المستودع لا يخزّن ملفات `.exe` داخل Git (لتبقى الحزمة خفيفة). ابنِ الملف محلياً
-بأمر واحد كما في [بناء الملف التنفيذي](#بناء-الملف-التنفيذي)، أو نزّله من صفحة
-**Releases** إن كانت متاحة.
+نزّل الملف من صفحة الإصدارات: **[Releases](https://github.com/Salahman91/aas-skills-studio/releases/latest)**
+(`AAS-Skills-Studio.exe` + `SHA256SUMS.txt` + الشهادة العامة).
+المستودع لا يخزّن ملفات `.exe` داخل Git لتبقى الحزمة خفيفة؛ يمكنك أيضاً بناؤه
+محلياً كما في [بناء الملف التنفيذي](#بناء-الملف-التنفيذي).
 
 ### 2) التشغيل من المصدر
 
@@ -257,9 +258,10 @@ one-click installation into your AI tool's skills folder.
 
 ### Option A — prebuilt executable
 
-Binaries are not committed to Git. Build one locally (see
-[Build the executable](#build-the-executable)) or grab it from the **Releases**
-page when available.
+Grab the binary from **[Releases](https://github.com/Salahman91/aas-skills-studio/releases/latest)**
+(`AAS-Skills-Studio.exe`, `SHA256SUMS.txt`, public certificate), or build it
+locally — see [Build the executable](#build-the-executable). Binaries are not
+committed to Git.
 
 ### Option B — run from source
 
