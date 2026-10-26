@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+dist/
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local data caches (regenerable with tools/)
+data/ar_cache.json
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Local settings or secrets — never commit
+*.env
+.env*
+settings.json

@@ -1,0 +1,124 @@
+{
+  "groups": [
+    {
+      "id": "audit",
+      "ar": "فحص المشاريع وجودة الكود",
+      "en": "Project Audit & Code Quality",
+      "subs": [
+        {"id": "review", "ar": "تدقيق ومراجعة الكود", "en": "Code audit & review",
+         "cats": ["code-quality", "quality", "analysis", "tool-quality"]},
+        {"id": "debug", "ar": "التنقيح وإصلاح الأخطاء", "en": "Debugging",
+         "cats": ["debugging"]},
+        {"id": "test", "ar": "الاختبار وأتمتته", "en": "Testing & test automation",
+         "cats": ["testing", "test-automation", "ai-testing"]}
+      ]
+    },
+    {
+      "id": "dev",
+      "ar": "تطوير البرمجيات",
+      "en": "Software Development",
+      "subs": [
+        {"id": "general", "ar": "تطوير عام ولغات البرمجة", "en": "General development & languages",
+         "cats": ["development", "coding", "core-dev", "engineering", "framework", "super-code",
+                  "development-and-testing", "general", "uncategorized", "app-builder", "tools",
+                  "blockchain", "code"]},
+        {"id": "frontend", "ar": "الواجهة الأمامية والويب", "en": "Frontend & web",
+         "cats": ["frontend", "front-end", "web", "web-development", "fullstack"]},
+        {"id": "backend", "ar": "الواجهة الخلفية وقواعد البيانات", "en": "Backend, APIs & databases",
+         "cats": ["backend", "api-integration", "developer-tools", "mcp", "database", "databases",
+                  "data-engineering"]},
+        {"id": "architecture", "ar": "المعمارية والتصميم التقني", "en": "Architecture",
+         "cats": ["architecture"]},
+        {"id": "games", "ar": "تطوير الألعاب", "en": "Game development",
+         "cats": ["game-development"]}
+      ]
+    },
+    {
+      "id": "mobile",
+      "ar": "تصميم وبناء تطبيقات الموبايل",
+      "en": "Mobile Apps",
+      "subs": [
+        {"id": "mobile", "ar": "تصميم واجهات الموبايل وبناؤها", "en": "Mobile UI & build",
+         "cats": ["mobile"]}
+      ]
+    },
+    {
+      "id": "ui",
+      "ar": "تصميم الواجهات والأنماط البصرية",
+      "en": "UI Design & Visual Styles",
+      "subs": [
+        {"id": "design", "ar": "تصميم الواجهات", "en": "Interface design",
+         "cats": ["design"]},
+        {"id": "styles", "ar": "الأنماط البصرية الجاهزة", "en": "Visual style recipes",
+         "cats": ["design-it", "creative"]},
+        {"id": "graphics", "ar": "الجرافيك والوسائط", "en": "Graphics & media",
+         "cats": ["graphics-processing", "media-processing", "video"]}
+      ]
+    },
+    {
+      "id": "ai",
+      "ar": "الذكاء الاصطناعي والوكلاء",
+      "en": "AI & Agents",
+      "subs": [
+        {"id": "ml", "ar": "النماذج وتعلّم الآلة", "en": "Models & machine learning",
+         "cats": ["ai-ml", "ai", "ai-research", "data-ai", "ml-ops", "science"]},
+        {"id": "agents", "ar": "الوكلاء وتنسيقهم", "en": "Agents & orchestration",
+         "cats": ["ai-agents", "agent-orchestration", "agent-squad", "agent-behavior",
+                  "agent-persona", "agent-evaluation", "agent-tooling", "voice-agents"]},
+        {"id": "prompt", "ar": "هندسة الأوامر والمهارات", "en": "Prompt & skill engineering",
+         "cats": ["prompt-engineering", "reasoning", "memory", "context-optimization",
+                  "skill-authoring", "meta"]}
+      ]
+    },
+    {
+      "id": "security",
+      "ar": "الأمان والحماية",
+      "en": "Security",
+      "subs": [
+        {"id": "security", "ar": "الأمان والاختبار الأخلاقي", "en": "Security & ethical testing",
+         "cats": ["security", "pentest-tools", "reverse-engineering"]}
+      ]
+    },
+    {
+      "id": "infra",
+      "ar": "التشغيل والبنية التحتية",
+      "en": "Infrastructure & Operations",
+      "subs": [
+        {"id": "cloud", "ar": "DevOps والسحابة", "en": "DevOps & cloud",
+         "cats": ["devops", "cloud", "operations", "reliability"]},
+        {"id": "automation", "ar": "الأتمتة وسير العمل", "en": "Automation & workflows",
+         "cats": ["automation", "browser-automation", "workflow", "workflow-bundle",
+                  "granular-workflow-bundle", "orchestration", "collaboration"]}
+      ]
+    },
+    {
+      "id": "data",
+      "ar": "البيانات والمستندات",
+      "en": "Data & Documents",
+      "subs": [
+        {"id": "data", "ar": "البيانات والتحليل", "en": "Data & analytics",
+         "cats": ["data", "data-science", "database-processing", "spreadsheet-processing"]},
+        {"id": "docs", "ar": "المستندات والعروض", "en": "Documents & presentations",
+         "cats": ["document-processing", "document-verification", "presentation-processing",
+                  "office-productivity", "knowledge-management"]}
+      ]
+    },
+    {
+      "id": "business",
+      "ar": "الأعمال والمحتوى والتسويق",
+      "en": "Business, Content & Marketing",
+      "subs": [
+        {"id": "management", "ar": "الأعمال وإدارة المنتج", "en": "Business & product",
+         "cats": ["business", "business-strategy", "growth", "finance", "legal", "consulting",
+                  "project-management", "planning", "product", "product-management",
+                  "career-jobs"]},
+        {"id": "content", "ar": "المحتوى والتسويق", "en": "Content & marketing",
+         "cats": ["marketing", "content", "content-writing", "seo", "writing", "research",
+                  "education", "communication", "media"]},
+        {"id": "misc", "ar": "متنوع", "en": "Miscellaneous",
+         "cats": ["health", "lifestyle", "travel", "personal-development", "shopping",
+                  "ecommerce", "monopoly", "leiloeiro", "andruia", "productivity"]}
+      ]
+    }
+  ]
+}
