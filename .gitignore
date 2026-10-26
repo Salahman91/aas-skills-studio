@@ -24,3 +24,6 @@ desktop.ini
 *.env
 .env*
 settings.json
+
+# Release artifacts (built locally, uploaded manually)
+release/
