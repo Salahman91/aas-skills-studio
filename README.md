@@ -9,6 +9,7 @@ browse, search in plain Arabic/English, download, and install into your AI tool.
 
 <p>
   <a href="https://github.com/Salahman91/aas-skills-studio/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/Salahman91/aas-skills-studio?style=flat-square&color=5eead4"></a>
+  <a href="https://github.com/Salahman91/aas-skills-studio/stargazers"><img alt="stars" src="https://img.shields.io/github/stars/Salahman91/aas-skills-studio?style=flat-square&color=5eead4"></a>
   <img alt="build" src="https://github.com/Salahman91/aas-skills-studio/actions/workflows/build.yml/badge.svg">
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows-0b0d12?style=flat-square">
   <img alt="python" src="https://img.shields.io/badge/python-3.14-0b0d12?style=flat-square&logo=python">
@@ -210,6 +211,13 @@ py -3.14 tools/check_groups.py
 كود هذا المشروع تحت [MIT](LICENSE). المهارات ومحتواها تخضع لترخيص
 `agentic-awesome-skills` الأصلي وأصحابها.
 
+## ساعد المشروع على النمو
+
+- ⭐ **نجمة** واحدة تجعله يظهر لمن يبحث عن أدوات عربية للوكلاء.
+- 🐛 البلاغات عبر [Issues](https://github.com/Salahman91/aas-skills-studio/issues/new/choose).
+- 🌐 تحسين الصياغة العربية في `data/skills.json` من أكثر المساهمات قيمةً.
+- 🏷️ ابدأ من [`good first issue`](https://github.com/Salahman91/aas-skills-studio/labels/good%20first%20issue).
+
 ---
 
 <a id="english"></a>
@@ -380,3 +388,10 @@ py -3.14 tools/check_groups.py
 
 Code: [MIT](LICENSE). Skills and their content remain under the original
 `agentic-awesome-skills` license and their authors' terms.
+
+## Help it grow
+
+- ⭐ **Star** the repo if it saves you time — it is how other Arabic-speaking developers find it.
+- 🐛 Report issues through [Issues](https://github.com/Salahman91/aas-skills-studio/issues/new/choose).
+- 🌐 Improving the Arabic wording in `data/skills.json` is the highest-value contribution right now.
+- 🏷️ Start from [`good first issue`](https://github.com/Salahman91/aas-skills-studio/labels/good%20first%20issue) or [`help wanted`](https://github.com/Salahman91/aas-skills-studio/labels/help%20wanted).
