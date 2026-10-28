@@ -56,6 +56,7 @@ browse, search in plain Arabic/English, download, and install into your AI tool.
 | إضافة لبرنامجك | 12 هدفاً جاهزاً، كل هدف يكتب في مجلد المهارات الصحيح لبرنامجه |
 | أمر استدعاء جاهز | صيغة الشرطة المائلة `/skill-id` كما تظهر في قوائم الأدوات، مع زر نسخ |
 | سجل وإلغاء | ملف `aas-download-log.txt` داخل مجلد الوجهة + زر إلغاء أثناء التنزيل |
+| نسخ ولصق | زر «نسخ الاسم» في لوحة التفاصيل، وقائمة بالزر الأيمن (اسم/أمر استدعاء/مسار/GitHub)، وشريط بحث يقبل Ctrl+V وقائمة قص/نسخ/لصق |
 | رمز GitHub اختياري | يرفع حد الطلبات من 60 إلى 5000/ساعة للتنزيل الجماعي |
 | بدون تبعيات | وقت التشغيل: مكتبة Python القياسية فقط (tkinter) |
 
@@ -175,11 +176,14 @@ data/
   catalog.json         الفهرس الكامل (2750 مهارة + أوصاف عربية + مصطلحات)
   groups.json          شجرة التصنيفات (9 مجموعات / 23 قسماً)
   skills.json          الأوصاف العربية اليدوية (39 مهارة)
+  ar_overrides.json    أوصاف عربية يدوية تُدمج عند البناء (26 مهارة)
 tools/
   build_catalog.py     بناء catalog.json من skills_index.json الرسمي
   translate_catalog.py إضافة الترجمة العربية (مع تخزين مؤقت)
   enrich_arabic.py     تحسين الأوصاف الغامضة واستخراج المصطلحات
   check_groups.py      التحقق أن كل تصنيف مُسند مرة واحدة
+  fix_arabic_clarity.py  تحسين وضوح الوصف العربي (أوصاف يدوية + توسيع الناقص)
+  search_eval.py       تقييم جودة البحث الذكي محليًا (15 استعلامًا)
 docs/screenshots/      صور الواجهة
 run_silent.bat         تشغيل من المصدر بدون نافذة سوداء
 AAS-Skills-Studio.spec وصفة PyInstaller
@@ -249,6 +253,7 @@ one-click installation into your AI tool's skills folder.
 | Install into your tool | 12 built-in targets, each writing to that tool's real skills directory |
 | Ready invocation | Slash form `/skill-id` as shown in tool command palettes, with one-click copy |
 | Logging & cancel | `aas-download-log.txt` in the destination plus a cancel button |
+| Copy & paste | “Copy name” button in the detail pane, right-click menu (name / invocation / path / GitHub) and a search box that accepts Ctrl+V with a cut/copy/paste context menu |
 | Optional GitHub token | Raises the API limit from 60 to 5,000 requests/hour for bulk downloads |
 | Zero dependencies | Runtime uses the Python standard library only (tkinter) |
 

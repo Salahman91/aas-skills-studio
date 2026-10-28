@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 الصيغة تتبع [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) و[Semantic Versioning](https://semver.org/).
 
+## [2.5.0] — 2026-10-28
+
+### Added
+- **Copy & paste workflows**: “Copy name” in the detail pane, a right-click menu (name / invocation / path / GitHub) and a search box that accepts `Ctrl+V` with a cut/copy/paste context menu.
+- **Smarter Arabic tokenisation** in the local search engine: word variants and query groups instead of single-token matching, plus an in-memory cache.
+- `data/ar_overrides.json`: 26 hand-written Arabic clarity overrides merged into the catalog at build time.
+- `tools/fix_arabic_clarity.py` and `tools/search_eval.py` (15-query local search evaluation).
+
+### Changed
+- Catalog rebuilt with the refreshed Arabic text (2,750 skills, 0 missing descriptions).
+- `.gitignore` now excludes packaged binaries and release files (`*.exe`, `*.zip`, `*.bundle`, `*.cer`, `SHA256SUMS.txt`, `release-notes.md`, `.release_id`).
 ## [2.4.0] — 2026-10-26
 
 ### Added

@@ -12,6 +12,7 @@ Standard library only (tkinter) so the one-file PyInstaller build stays reliable
 import json
 import os
 import queue
+import re
 import subprocess
 import sys
 import threading
@@ -25,7 +26,7 @@ from pathlib import Path
 import search_engine
 
 APP_NAME = "AAS Skills Studio"
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.5.0"
 
 BG = "#0B0D12"
 PANEL = "#12151C"
@@ -242,6 +243,7 @@ class Repo:
             files = ["SKILL.md"]
 
         ok = fail = 0
+        failed = []
         for index, rel in enumerate(files, start=1):
             if progress:
                 progress(index, len(files), rel)
@@ -250,6 +252,12 @@ class Repo:
                 ok += 1
             except Exception:
                 fail += 1
+                failed.append(rel)
+        if failed:
+            note = "فشل: " + "، ".join(failed[:3])
+            if len(failed) > 3:
+                note += " …"
+            return ok, fail, folder, note
         return ok, fail, folder, ""
 
 
@@ -298,6 +306,24 @@ def cli_selftest():
     if unmapped:
         print("SELFTEST FAIL unmapped categories: %s" % ", ".join(unmapped[:10]))
         return 6
+
+    clarity = []
+    for skill in skills:
+        text = (skill.get("ar_clear") or "").strip()
+        if not re.search(r"[\u0600-\u06FF]", text):
+            clarity.append("%s: missing arabic description" % skill.get("id"))
+        elif len(text) < 25:
+            clarity.append("%s: arabic description under 25 chars" % skill.get("id"))
+        if (re.search(r"Curated upstream guidance|Curated guidance",
+                      skill.get("desc") or "", re.I)
+                and skill.get("ar_source") != "manual"):
+            clarity.append("%s: vague upstream description without manual arabic"
+                           % skill.get("id"))
+    if clarity:
+        print("SELFTEST FAIL clarity")
+        for item in clarity[:20]:
+            print("  - " + item)
+        return 7
 
     curated = sum(1 for s in skills if s.get("ar"))
     subs = sum(len(group["subs"]) for group in groups)
@@ -536,6 +562,13 @@ def build_ui(catalog, settings):
         "نتائج البحث الذكي": "Smart search results",
         "نتائج البحث الذكي: %d": "Smart results: %d",
         "بحث ذكي": "Smart search",
+        "نسخ الاسم": "Copy name",
+        "اسم المهارة": "skill name",
+        "قص": "Cut",
+        "لصق": "Paste",
+        "نسخ المسار": "Copy path",
+        "نسخ الوصف": "Copy description",
+        "نسخ المصطلحات": "Copy terms",
     }
 
     def tr(text):
@@ -787,6 +820,8 @@ def build_ui(catalog, settings):
     placeholder_text = tr(placeholder)
     search_entry.insert(0, placeholder_text)
     search_entry.configure(fg=MUTED)
+    # حالة منطقية للنص الإرشادي بدل مقارنة نص الحقل نفسه
+    ph = {"active": True}
 
     smart_row = tk.Frame(search_wrap, bg=BG)
     smart_row.pack(fill="x", pady=(px(6), 0))
@@ -861,6 +896,11 @@ def build_ui(catalog, settings):
     canvas.bind("<Configure>", lambda e: canvas.itemconfigure(inner_id, width=e.width))
 
     def on_wheel(event):
+        try:
+            if event.widget.winfo_toplevel() is not root:
+                return
+        except Exception:
+            return
         node = canvas.winfo_containing(event.x_root, event.y_root)
         while node is not None:
             if node is canvas or node is inner:
@@ -900,6 +940,10 @@ def build_ui(catalog, settings):
     name_label = tk.Label(name_row, text="", font=title_font, bg=BG, fg=TEXT, anchor="w",
                           justify="left")
     name_label.pack(side="right")
+    name_copy_btn = tk.Label(name_row, text=tr("نسخ الاسم"), font=small_font, bg=PANEL_2,
+                             fg=ACCENT, padx=px(8), pady=px(2), cursor="hand2")
+    name_copy_btn.pack(side="left", padx=(px(4), 0))
+    name_copy_btn.bind("<Button-1>", lambda _e: copy_current("name"))
 
     chip_row = tk.Frame(detail_view, bg=BG)
     chip_row.pack(fill="x", pady=(px(6), 0))
@@ -925,6 +969,20 @@ def build_ui(catalog, settings):
     desc_label = tk.Label(detail_view, text="", font=small_font, bg=BG, fg=MUTED, anchor="e",
                           justify="right", wraplength=px(380))
     desc_label.pack(fill="x", pady=(px(2), 0))
+
+    def make_readonly(widget):
+        """حقل نصي للقراءة فقط: يسمح بالتحديد والنسخ ويمنع التعديل."""
+        def on_key(event):
+            mask = event.state or 0
+            if mask & 0x4 and event.keysym.lower() in ("c", "a", "insert"):
+                return None
+            if event.keysym in ("Left", "Right", "Up", "Down", "Home", "End",
+                                "Prior", "Next", "Shift_L", "Shift_R",
+                                "Control_L", "Control_R", "Tab"):
+                return None
+            return "break"
+
+        widget.bind("<Key>", on_key)
 
     def command_block(title, note, height=2):
         tk.Label(detail_view, text=title, font=bold_font, bg=BG, fg=MUTED,
@@ -1142,6 +1200,8 @@ def build_ui(catalog, settings):
 
             for widget in (row, name, desc, meta):
                 widget.bind("<Button-1>", lambda _e, s=skill["id"]: select_skill(s))
+                widget.bind("<Button-3>",
+                            lambda e, s=skill["id"]: show_row_menu(e, s))
             box.bind("<Button-1>", lambda _e, s=skill["id"]: (toggle_check(s), paint_rows(),
                                                               select_skill(s)))
 
@@ -1200,7 +1260,6 @@ def build_ui(catalog, settings):
             widget.configure(state="normal")
             widget.delete("1.0", "end")
             widget.insert("1.0", value)
-            widget.configure(state="disabled")
 
         invoke_copy.bind("<Button-1>",
                          lambda _e: copy_value(invocation, "أمر الاستدعاء"))
@@ -1212,10 +1271,108 @@ def build_ui(catalog, settings):
                               target_label(TARGETS[0])))
 
     def copy_value(value, label):
+        value = "" if value is None else str(value)
         root.clipboard_clear()
         root.clipboard_append(value)
         root.update()
         set_status(tr("تم النسخ: ") + tr(label), ACCENT)
+
+    def copy_current(field):
+        skill = current_skill()
+        if not skill:
+            return
+        if field == "name":
+            copy_value(skill.get("name") or skill["id"], "اسم المهارة")
+        elif field == "invoke":
+            copy_value("/" + skill["id"], "أمر الاستدعاء")
+        elif field == "path":
+            copy_value(skill.get("path") or "", "نسخ المسار")
+
+    def paste_clipboard(_event=None):
+        try:
+            data = root.clipboard_get()
+        except Exception:
+            return "break"
+        if ph["active"]:
+            search_entry.delete(0, "end")
+            search_entry.configure(fg=TEXT)
+            ph["active"] = False
+        search_entry.insert("insert", data)
+        run_search_now()
+        if not visible_skills() and len(state["query"].split()) >= 2:
+            # لصق عبارة بلا نتائج حرفية: جرّب البحث الذكي تلقائيًا
+            run_smart_search()
+        return "break"
+
+    entry_menu = tk.Menu(search_entry, tearoff=0)
+    entry_menu.add_command(label=tr("قص"),
+                           command=lambda: search_entry.event_generate("<<Cut>>"))
+    entry_menu.add_command(label=tr("نسخ"),
+                           command=lambda: search_entry.event_generate("<<Copy>>"))
+    entry_menu.add_command(label=tr("لصق"), command=paste_clipboard)
+    entry_menu.add_separator()
+    entry_menu.add_command(label=tr("تحديد الكل"),
+                           command=lambda: (search_entry.selection_range(0, "end"),
+                                            search_entry.icursor("end")))
+
+    def post_entry_menu(event):
+        try:
+            entry_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            entry_menu.grab_release()
+
+    search_entry.bind("<Button-3>", post_entry_menu)
+    search_entry.bind("<Control-v>", paste_clipboard)
+    search_entry.bind("<Control-V>", paste_clipboard)
+    search_entry.bind("<<Paste>>", paste_clipboard)
+
+    row_menu = tk.Menu(root, tearoff=0)
+    row_menu.add_command(label=tr("نسخ الاسم"), command=lambda: copy_current("name"))
+    row_menu.add_command(label=tr("أمر الاستدعاء"), command=lambda: copy_current("invoke"))
+    row_menu.add_command(label=tr("نسخ المسار"), command=lambda: copy_current("path"))
+    row_menu.add_separator()
+    row_menu.add_command(label=tr("فتح على GitHub"), command=open_current_github)
+
+    def show_row_menu(event, skill_id):
+        state["menu_skill"] = skill_id
+        state["selected_id"] = skill_id
+        paint_rows()
+        try:
+            row_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            row_menu.grab_release()
+
+    def make_label_menu(widget, label_key):
+        menu = tk.Menu(widget, tearoff=0)
+        menu.add_command(label=tr("نسخ"),
+                         command=lambda: copy_value(widget.cget("text"), label_key))
+
+        def post(event):
+            try:
+                menu.tk_popup(event.x_root, event.y_root)
+            finally:
+                menu.grab_release()
+
+        widget.bind("<Button-3>", post)
+
+    for _widget, _key in ((name_label, "نسخ الاسم"),
+                          (func_label, "نسخ الوصف"),
+                          (desc_label, "نسخ الوصف"),
+                          (terms_label, "نسخ المصطلحات"),
+                          (path_label, "نسخ المسار")):
+        make_label_menu(_widget, _key)
+
+    for _text_widget in (invoke_text, install_text):
+        _text_menu = tk.Menu(_text_widget, tearoff=0)
+        _text_menu.add_command(label=tr("نسخ"),
+                               command=lambda w=_text_widget: copy_value(
+                                   w.get("1.0", "end").strip(), "أمر الاستدعاء"))
+        _text_menu.add_command(label=tr("تحديد الكل"),
+                               command=lambda w=_text_widget: (
+                                   w.tag_add("sel", "1.0", "end"),
+                                   w.mark_set("insert", "1.0")))
+        _text_widget.bind("<Button-3>",
+                          lambda e, m=_text_menu: m.tk_popup(e.x_root, e.y_root))
 
     def on_target_change(_event=None):
         label = target_var.get()
@@ -1229,7 +1386,7 @@ def build_ui(catalog, settings):
     # ---------------- search --------------------------------------------------
     def on_search(_event=None):
         value = search_entry.get()
-        new_query = "" if value == placeholder_text else value
+        new_query = "" if (ph["active"] and value == placeholder_text) else value
         if new_query != state["query"]:
             if state["smart_ids"] is not None or state["smart_why"]:
                 state["smart_ids"] = None
@@ -1240,9 +1397,10 @@ def build_ui(catalog, settings):
         refresh_list()
 
     def focus_search(_event=None):
-        if search_entry.get() == placeholder_text:
+        if ph["active"]:
             search_entry.delete(0, "end")
             search_entry.configure(fg=TEXT)
+            ph["active"] = False
         search_entry.focus_set()
         return "break"
 
@@ -1251,13 +1409,31 @@ def build_ui(catalog, settings):
             search_entry.delete(0, "end")
             search_entry.insert(0, placeholder_text)
             search_entry.configure(fg=MUTED)
+            ph["active"] = True
 
     search_entry.bind("<FocusIn>", focus_search)
     search_entry.bind("<FocusOut>", blur_search)
-    search_entry.bind("<KeyRelease>", on_search)
+
+    search_job = {"id": None}
+
+    def run_search_now():
+        search_job["id"] = None
+        on_search()
+
+    def schedule_search(_event=None):
+        if search_job["id"] is not None:
+            try:
+                root.after_cancel(search_job["id"])
+            except Exception:
+                pass
+        search_job["id"] = root.after(200, run_search_now)
+
+    search_entry.bind("<KeyRelease>", schedule_search)
 
     def clear_search():
         search_entry.delete(0, "end")
+        search_entry.configure(fg=TEXT)
+        ph["active"] = False
         state["query"] = ""
         state["smart_ids"] = None
         state["smart_why"] = {}
@@ -1416,6 +1592,8 @@ def build_ui(catalog, settings):
             cancel_btn.pack_forget()
 
     def drain_queue():
+        if not root.winfo_exists():
+            return
         try:
             while True:
                 kind, payload = ui_queue.get_nowait()
@@ -1455,7 +1633,12 @@ def build_ui(catalog, settings):
                     refresh_list()
         except queue.Empty:
             pass
-        root.after(120, drain_queue)
+        except tk.TclError:
+            return
+        try:
+            root.after(120, drain_queue)
+        except tk.TclError:
+            pass
 
     def start_selected(single=False, force_folder=False):
         if state["busy"]:
@@ -1529,6 +1712,7 @@ def build_ui(catalog, settings):
                         notes.append(tr("أُوقف التنزيل بواسطة المستخدم"))
                         break
                     ui_queue.put(("progress", (position, len(skills), skill["id"])))
+                    note = ""
                     try:
                         ok, fail, _folder, note = client.download_skill(skill, dest)
                         if note == "موجودة":
@@ -1542,7 +1726,10 @@ def build_ui(catalog, settings):
                         fail_total += 1
                         status = "FAIL"
                         notes.append("%s: %s" % (skill["id"], exc))
-                    log_lines.append("[%s] %s" % (status, skill["id"]))
+                    detail = "" if note == "موجودة" else (" — " + note if note else "")
+                    log_lines.append("[%s] %s%s" % (status, skill["id"], detail))
+                    if note and note != "موجودة":
+                        notes.append("%s: %s" % (skill["id"], note))
             except Exception as exc:  # noqa: BLE001
                 ui_queue.put(("error", "فشل التنزيل: %s" % exc))
                 return
@@ -1607,8 +1794,12 @@ def build_ui(catalog, settings):
                 pass
 
     def on_close():
-        settings["target"] = state["target"]
-        save_settings(settings)
+        try:
+            cancel_event.set()
+            settings["target"] = state["target"]
+            save_settings(settings)
+        except Exception:
+            pass
         root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", on_close)
@@ -1674,6 +1865,24 @@ def build_ui(catalog, settings):
                 root.after(300, root.destroy)
 
         root.after(1200, smart_probe)
+
+    if os.environ.get("AAS_CLIP_TEST"):
+        def clip_probe():
+            first = visible_skills()
+            if first:
+                select_skill(first[0]["id"])
+            copy_current("name")
+            print("clip_name=%s" % root.clipboard_get())
+            root.clipboard_clear()
+            root.clipboard_append("مراجعة كود")
+            root.update()
+            paste_clipboard()
+            print("entry=%s" % search_entry.get())
+            print("query=%s results=%d" % (state["query"], len(visible_skills())))
+            print("placeholder_active=%s" % ph["active"])
+            root.destroy()
+
+        root.after(1200, clip_probe)
 
     root.mainloop()
     return 0

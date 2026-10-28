@@ -1,7 +1,17 @@
-# Build artifacts
+﻿# Build artifacts
 build/
 dist/
+release/
 *.spec.bak
+
+# Packaged binaries and release files (uploaded to GitHub Releases)
+*.exe
+*.zip
+*.bundle
+*.cer
+SHA256SUMS.txt
+release-notes.md
+.release_id
 
 # Python
 __pycache__/
@@ -24,6 +34,3 @@ desktop.ini
 *.env
 .env*
 settings.json
-
-# Release artifacts (built locally, uploaded manually)
-release/

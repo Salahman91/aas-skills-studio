@@ -5,6 +5,10 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from fix_arabic_clarity import apply_clarity  # noqa: E402
+
 CATEGORY_AR = {
     "security": "الأمان",
     "development": "التطوير",
@@ -175,10 +179,13 @@ def main():
         "skills": skills,
     }
 
+    clarity = apply_clarity(catalog)
+
     out = root / "data" / "catalog.json"
     out.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print("CATALOG OK skills=%d categories=%d bytes=%d curated=%d"
-          % (len(skills), len(categories), out.stat().st_size, len(curated)))
+    print("CATALOG OK skills=%d categories=%d bytes=%d curated=%d clarity=%d"
+          % (len(skills), len(categories), out.stat().st_size, len(curated),
+             clarity["override"] + clarity["expanded"] + clarity["no_arabic"]))
 
 
 if __name__ == "__main__":

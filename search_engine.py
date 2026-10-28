@@ -12,7 +12,9 @@ DIACRITICS = re.compile(r"[\u0617-\u061A\u064B-\u0652\u0670\u06D6-\u06ED]")
 
 # كلمة عربية -> مفاهيم إنجليزية تُضاف إلى الاستعلام
 CONCEPTS = {
-    "تحليل": ["analysis", "audit", "review", "inspect"],
+    "تحليل": ["analysis", "analyze", "audit", "review", "inspect", "diagnose"],
+    "سبب": ["cause", "reason", "rootcause"],
+    "جذري": ["root", "rootcause", "fundamental"],
     "فحص": ["audit", "review", "inspect", "scan", "lint"],
     "تدقيق": ["audit", "review", "compliance"],
     "مراجعة": ["review", "audit", "code review"],
@@ -159,6 +161,7 @@ GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite",
 
 def normalize(text):
     text = (text or "").lower()
+    text = text.replace("\u0640", "")
     text = DIACRITICS.sub("", text)
     text = re.sub(r"[أإآٱ]", "ا", text)
     text = re.sub(r"ى", "ي", text)
@@ -168,42 +171,79 @@ def normalize(text):
     return text
 
 
-def query_tokens(query):
-    raw = re.split(r"[\s,،.;؛:!؟?()\[\]\-_/\\]+", query.strip())
-    tokens = [t for t in raw if t and len(t) > 1]
-    expanded = []
-    seen = set()
+_AR_SPLIT = re.compile(r"[\s,،.;؛:!؟?()\[\]\-_/\\]+")
 
-    def add(token):
-        token = token.strip()
-        if not token or token in seen:
-            return
-        seen.add(token)
-        expanded.append(token)
 
-    for token in tokens:
-        norm = normalize(token)
-        if norm in STOPWORDS_AR or token in STOPWORDS_AR:
+def _variants(token, df=None):
+    """صيغ مخففة للكلمة (سابقة/لاحقة شائعة) بشرط وجود الصيغة في الفهرس."""
+    forms = [token]
+
+    def known(form):
+        return df is None or df.get(form, 0) > 0
+
+    for prefix in ("ال", "و", "ب", "ل", "ك", "ف"):
+        if token.startswith(prefix) and len(token) - len(prefix) >= 3:
+            candidate = token[len(prefix):]
+            if known(candidate):
+                forms.append(candidate)
+                break
+    for suffix in ("ات", "ون", "ين", "ها", "ه"):
+        if token.endswith(suffix) and len(token) - len(suffix) >= 3:
+            candidate = token[:-len(suffix)]
+            if known(candidate):
+                forms.append(candidate)
+    return list(dict.fromkeys(forms))
+
+
+def query_groups(query, df=None):
+    """تجميع الاستعلام: كلمات المستخدم مع ما يقابلها من مفاهيم إنجليزية."""
+    raw = _AR_SPLIT.split((query or "").strip())
+    words = [t for t in raw if t and len(t) > 1]
+    groups = []
+    used = set()
+
+    for word in words:
+        norm = normalize(word)
+        if norm in STOPWORDS_AR or word in STOPWORDS_AR:
             continue
-        add(norm)
+        forms = _variants(norm, df)
+        expansions = []
         for key, values in CONCEPTS.items():
             key_norm = normalize(key)
             if key_norm in norm or norm in key_norm:
                 for value in values:
                     for piece in value.split():
-                        add(normalize(piece))
-    return expanded
+                        piece_norm = normalize(piece)
+                        if not piece_norm or piece_norm in used or piece_norm in forms:
+                            continue
+                        used.add(piece_norm)
+                        expansions.append(piece_norm)
+        groups.append({"word": norm, "forms": forms, "expansions": expansions})
+    return groups
 
 
-_DF_CACHE = {}
+def query_tokens(query):
+    groups = query_groups(query)
+    tokens = []
+    for group in groups:
+        tokens.extend(group["forms"])
+        tokens.extend(group["expansions"])
+    return list(dict.fromkeys(tokens))
+
+
+_DF_CACHE = {"ref": None, "df": None}
+
+
+def clear_cache():
+    """يمسح ذاكرة تردد الكلمات — استدعها بعد تغيير قائمة المهارات."""
+    _DF_CACHE["ref"] = None
+    _DF_CACHE["df"] = None
 
 
 def _document_frequency(skills):
     """تردد كل كلمة داخل الفهرس — يُحسب مرة واحدة لترجيح الكلمات النادرة."""
-    key = id(skills)
-    cached = _DF_CACHE.get(key)
-    if cached is not None:
-        return cached
+    if _DF_CACHE["ref"] is skills and _DF_CACHE["df"] is not None:
+        return _DF_CACHE["df"]
 
     df = {}
     for skill in skills:
@@ -215,7 +255,8 @@ def _document_frequency(skills):
         ]))
         for token in set(re.findall(r"[a-z0-9\u0600-\u06ff]{2,}", text)):
             df[token] = df.get(token, 0) + 1
-    _DF_CACHE[key] = df
+    _DF_CACHE["ref"] = skills
+    _DF_CACHE["df"] = df
     return df
 
 
@@ -224,48 +265,75 @@ def _idf(df, total, token):
 
 
 def score_skills(skills, query, limit=60):
-    tokens = query_tokens(query)
-    if not tokens:
+    df = _document_frequency(skills)
+    groups = query_groups(query, df)
+    if not groups:
         return []
 
     total = len(skills)
-    df = _document_frequency(skills)
     phrase = normalize(query.strip())
-    weights = {token: _idf(df, total, token) for token in tokens}
 
     scored = []
     for skill in skills:
         name = normalize(skill["name"])
-        desc = normalize(skill["desc"] + " " + (skill.get("ar_clear") or ""))
+        ar_text = normalize(skill.get("ar_clear") or "")
+        en_desc = normalize(skill["desc"] or "")
         cat = normalize(skill["category"].replace("-", " "))
 
         score = 0.0
-        matched = 0
-        for token in tokens:
-            weight = weights[token]
-            hit = False
-            if token in name:
-                score += weight * 2.6
-                hit = True
-            if token in desc:
-                score += weight * 1.0
-                hit = True
-            if token in cat:
-                score += weight * 1.3
-                hit = True
-            if hit:
-                matched += 1
+        covered = 0
 
-        if not matched:
+        for group in groups:
+            word_w = _idf(df, total, group["word"])
+            subtotal = 0.0
+            hit = False
+            for form in group["forms"]:
+                if form in name:
+                    subtotal += word_w * 2.8
+                    hit = True
+                if form in ar_text:
+                    subtotal += word_w * 1.7
+                    hit = True
+                if form in en_desc:
+                    subtotal += word_w * 1.0
+                    hit = True
+                if form in cat:
+                    subtotal += word_w * 1.2
+                    hit = True
+            for token in group["expansions"]:
+                token_w = _idf(df, total, token)
+                if token in name:
+                    subtotal += token_w * 1.5
+                    hit = True
+                if token in ar_text:
+                    subtotal += token_w * 0.8
+                    hit = True
+                if token in en_desc:
+                    subtotal += token_w * 0.5
+                    hit = True
+                if token in cat:
+                    subtotal += token_w * 1.0
+                    hit = True
+            if hit:
+                covered += 1
+            score += min(subtotal, word_w * 4.5 + 8.0)
+
+        if not covered:
             continue
-        score += matched * 0.8
-        if len(phrase) > 4 and phrase in name:
-            score += 6.0
-        elif len(phrase) > 4 and phrase in desc:
-            score += 2.0
+
+        score += 6.0 * (covered / float(len(groups)))
+
+        if len(phrase) > 4:
+            if phrase in name:
+                score += 7.0
+            elif phrase in ar_text:
+                score += 4.0
+            elif phrase in en_desc:
+                score += 2.0
+
         scored.append((score, skill))
 
-    scored.sort(key=lambda item: (-item[0], item[1]["name"].lower()))
+    scored.sort(key=lambda item: (-item[0], item[1]["name"].lower(), item[1]["id"]))
     return [skill for _score, skill in scored[:limit]]
 
 
